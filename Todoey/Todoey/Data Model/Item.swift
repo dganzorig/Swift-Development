@@ -8,7 +8,9 @@
 
 import Foundation
 
-class Item {
+// Codable classes cannot contain custom classes
+// Can also do Encodable and Decodable separately
+class Item: Codable {
     
     var title: String = ""
     var done: Bool = false
