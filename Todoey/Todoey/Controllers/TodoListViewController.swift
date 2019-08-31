@@ -22,10 +22,34 @@ class TodoListViewController: SwipeTableViewController {
         }
     }
 
+    // called before NavigationController ready
     override func viewDidLoad() {
         super.viewDidLoad()
         searchBar.delegate = self
         tableView.separatorStyle = .none
+    }
+    
+    // called after NavigationController ready
+    override func viewWillAppear(_ animated: Bool) {
+        guard let navBar = navigationController?.navigationBar else { fatalError("Navigation controller does not exist") }
+        guard let colorHex = selectedCategory?.backgroundColor else { fatalError() }
+        self.title = selectedCategory?.name
+        updateNavBar(withHexCode: colorHex)
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        updateNavBar(withHexCode: "1D9BF6")
+    }
+    
+    //MARK - Nav Bar Setup Code Methods
+    func updateNavBar(withHexCode colorHexCode: String) {
+        guard let navBar = navigationController?.navigationBar else { fatalError() }
+        guard let navBarColor = HexColor(colorHexCode) else { fatalError() }
+        let contrastColor = ContrastColorOf(navBarColor, returnFlat: true)
+        navBar.barTintColor = navBarColor
+        navBar.tintColor = contrastColor
+        navBar.largeTitleTextAttributes = [NSAttributedString.Key.foregroundColor: contrastColor]
+        searchBar.barTintColor = navBarColor
     }
     
     //MARK - TableView DataSource methods
@@ -39,6 +63,7 @@ class TodoListViewController: SwipeTableViewController {
         let cell = super.tableView(tableView, cellForRowAt: indexPath)
         if let item = todoItems?[indexPath.row]{
             cell.textLabel?.text = item.title
+            cell.accessoryType = item.done ? .checkmark : .none
             if let color = HexColor(self.selectedCategory!.backgroundColor)?.darken(byPercentage: CGFloat(indexPath.row) / CGFloat(self.todoItems!.count)) {
                 cell.backgroundColor = color
                 cell.textLabel?.textColor = ContrastColorOf(color, returnFlat: true)
